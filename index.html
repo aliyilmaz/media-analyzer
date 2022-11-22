@@ -12,6 +12,8 @@
   <body>
     <div id="wrapper">
       <input type="file" id="fileinput" name="fileinput" multiple />
+      <input type="file" id="fileinput1" name="fileinput" multiple />
+      <input type="file" id="fileinput2" name="fileinput" multiple />
       <div id="output"></div>
       <textarea id="output"></textarea>
     </div>
@@ -19,12 +21,13 @@
     <script type="text/javascript" src="script.js"></script>
 
     <script>
+      
       let divOutputHtml = '',
-        divOutputElement = document.body.querySelector('div#output');
+          divOutputElement = document.querySelector('div#output');
 
-        media_analyzer('#fileinput', function(e, media){
-        // console.log(media);
-
+      media_analyzer('#fileinput', function(e, media){
+        
+        console.log(media);
         for (let index = 0; index < media.length; index++) {
           mime_type = (media[index]['mime_type'] != undefined) ? media[index]['mime_type'].split('/')[0] : undefined;
 
@@ -50,8 +53,75 @@
           divOutputElement.appendChild(stringToHTML(divOutputHtml));
         }
         document.querySelector('textarea#output').value = JSON.stringify(media, null, 2);
+     
+    });
+
+
+    media_analyzer('#fileinput1', function(e, media){
         
-      });
+        console.log(media);
+        for (let index = 0; index < media.length; index++) {
+          mime_type = (media[index]['mime_type'] != undefined) ? media[index]['mime_type'].split('/')[0] : undefined;
+
+          filename = truncate(basename(media[index]['filename']), 60);
+                    
+          // console.log(media[index]);
+          // .jpeg, .jpg, .png, .webp, .svg, .gif
+          if(mime_type == 'image'){
+            divOutputHtml = '<img src="'+(URL.createObjectURL(e.target.files[index]))+'" title="'+filename+'">';
+          }
+
+          // .mov, .mp4, .webm, .m4v, .mkv
+          if(mime_type == 'video'){
+            divOutputHtml = '<video src="'+(URL.createObjectURL(e.target.files[index]))+'" controls title="'+filename+'"></video>';
+          }
+
+          // .mp3, .wav, .flac, .aac, .m4a
+          if(mime_type == 'audio'){
+            divOutputHtml = '<audio src="'+(URL.createObjectURL(e.target.files[index]))+'" controls title="'+filename+'"></audio>';
+          }
+
+          // or...
+          divOutputElement.appendChild(stringToHTML(divOutputHtml));
+        }
+        document.querySelector('textarea#output').value = JSON.stringify(media, null, 2);
+      
+    });
+
+    media_analyzer('#fileinput2', function(e, media){
+        
+        console.log(media);
+        for (let index = 0; index < media.length; index++) {
+          mime_type = (media[index]['mime_type'] != undefined) ? media[index]['mime_type'].split('/')[0] : undefined;
+
+          filename = truncate(basename(media[index]['filename']), 60);
+                    
+          // console.log(media[index]);
+          // .jpeg, .jpg, .png, .webp, .svg, .gif
+          if(mime_type == 'image'){
+            divOutputHtml = '<img src="'+(URL.createObjectURL(e.target.files[index]))+'" title="'+filename+'">';
+          }
+
+          // .mov, .mp4, .webm, .m4v, .mkv
+          if(mime_type == 'video'){
+            divOutputHtml = '<video src="'+(URL.createObjectURL(e.target.files[index]))+'" controls title="'+filename+'"></video>';
+          }
+
+          // .mp3, .wav, .flac, .aac, .m4a
+          if(mime_type == 'audio'){
+            divOutputHtml = '<audio src="'+(URL.createObjectURL(e.target.files[index]))+'" controls title="'+filename+'"></audio>';
+          }
+
+          // or...
+          divOutputElement.appendChild(stringToHTML(divOutputHtml));
+        }
+        document.querySelector('textarea#output').value = JSON.stringify(media, null, 2);
+      
+    });
+        
+        // or...
+       
+      
     </script>
   </body>
 </html>

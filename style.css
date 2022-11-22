@@ -8,7 +8,7 @@ html, body{
   #wrapper {
     padding: 8px;
   }
-  #fileinput {
+  #fileinput, #fileinput1, #fileinput2 {
     padding-bottom: 8px;
     width: 100%;
     margin-bottom: 10px;
