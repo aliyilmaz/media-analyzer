@@ -8,7 +8,29 @@
  * @link       https://github.com/aliyilmaz/media-analyzer
  *
  */
- MediaInfoOutput = [];
+
+async function getAudioDuration(audio)
+{
+  let audioTag = document.createElement('audio');
+  audioTag.src = URL.createObjectURL(audio);
+
+
+  await getPromiseFromEvent(audioTag, 'loadedmetadata')
+  
+  return audioTag.duration
+}
+
+function getPromiseFromEvent(item, event) {
+  return new Promise((resolve) => {
+      const listener = () => {
+          item.removeEventListener(event, listener)
+          // console.log(item.duration);
+          resolve()
+      }
+      item.addEventListener(event, listener)
+  })
+}
+
 function get_file_info(mediainfo, file) {
   let getSize = () => file.size
   let readChunk = (chunkSize, offset) =>
@@ -25,7 +47,7 @@ function get_file_info(mediainfo, file) {
 
   return mediainfo
     .analyzeData(getSize, readChunk)
-    .then((result) => {
+    .then( async (result) => {
       MediaInfoOutput = JSON.parse(result);
       // delete MediaInfoOutput['creatingLibrary'];
       // extra-codec
@@ -33,53 +55,53 @@ function get_file_info(mediainfo, file) {
 
         // SUPPORT AAC
         if ((MediaInfoOutput['media']['track'][1]['@type'] === 'Audio' && MediaInfoOutput['media']['track'][1]['Format'] === 'AAC')){
-          let audioElement = document.createElement('audio');
-          audioElement.src = URL.createObjectURL(file);
-          audioElement.onloadedmetadata = function() {
-            MediaInfoOutput['Duration'] = String(audioElement.duration);
-          };
-          audioElement.remove();
+          MediaInfoOutput.duration = await getAudioDuration(file); // Thanks https://stackoverflow.com/a/71216199/10515363
         }
         // SUPPORT AAC
+
+        // OTHER AUDIO
+        if ((MediaInfoOutput['media']['track'][1]['@type'] === 'Audio' && MediaInfoOutput['media']['track'][1]['Format'] !== 'AAC')){
+          MediaInfoOutput.duration = MediaInfoOutput['media']['track'][1]['Duration'];
+        }
+        // OTHER AUDIO
       
       }
 
-        // DETERMINING VIDEO DURATION
-        if(MediaInfoOutput['media']['track'][1] != undefined){
+      // DETERMINING VIDEO DURATION
+      if(MediaInfoOutput['media']['track'][1] != undefined){
 
-          if ((MediaInfoOutput['media']['track'][1]['@type'] === 'Video' &&  MediaInfoOutput['media']['track'][2]['@type'] === 'Audio')){
-            
-            let Media1Duration = MediaInfoOutput['media']['track'][1]['Duration'],
-                Media2Duration = MediaInfoOutput['media']['track'][2]['Duration'];
-            if(Media1Duration > Media2Duration){
-              MediaInfoOutput.Duration = Media1Duration;
-            } else {
-              MediaInfoOutput.Duration = Media2Duration;
-            }
+        if ((MediaInfoOutput['media']['track'][1]['@type'] === 'Video' &&  MediaInfoOutput['media']['track'][2]['@type'] === 'Audio')){
+          
+          let Media1Duration = MediaInfoOutput['media']['track'][1]['Duration'],
+              Media2Duration = MediaInfoOutput['media']['track'][2]['Duration'];
+          if(Media1Duration > Media2Duration){
+            MediaInfoOutput.duration = Media1Duration;
+          } else {
+            MediaInfoOutput.duration = Media2Duration;
           }
-
         }
-        // DETERMINING VIDEO DURATION
+      }
+      // DETERMINING VIDEO DURATION
 
-        // EXTRA INFO
-        MediaInfoOutput.filename = file.name;
-        MediaInfoOutput.mime_type = (file.type == undefined) ? 'undefined' : file.type;
+      // EXTRA INFO
+      MediaInfoOutput.filename = file.name;
+      MediaInfoOutput.mime_type = (file.type == undefined) ? 'undefined' : file.type;
+      // EXTRA INFO
 
-        // EXTRA INFO
-
-      return MediaInfoOutput;
-      // extra-codec
-    })
-    .catch((error) => {
-      console.log('An error occured:\n'+error.stack);
-    })
+    return MediaInfoOutput;
+    // extra-codec
+  })
+  .catch((error) => {
+    console.log('An error occured:\n'+error.stack);
+  })
 }
 
 async function onChangeFile(fileinput, mediainfo) {
-  let file;
-  let originalStyle = fileinput.style;
-  result = [];
-  numb = 4000;
+  let file,
+      result = [],
+      numb = 4000,
+      originalStyle = fileinput.style;
+
   let intervalId =  setInterval(() => {
     fileinput.style.borderBottom = '8px solid';
     fileinput.style.borderImage = 'linear-gradient(' + numb * 10 + 'deg, turquoise, greenyellow) 1';
@@ -95,7 +117,7 @@ async function onChangeFile(fileinput, mediainfo) {
         if (i + 1 == fileinput.files.length) {
           fileinput.style = originalStyle;
           clearInterval(intervalId);
-          // return
+          
         }
       }
     }
