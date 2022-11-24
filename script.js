@@ -85,7 +85,7 @@ function get_file_info(mediainfo, file) {
 
       // EXTRA INFO
       MediaInfoOutput.filename = file.name;
-      MediaInfoOutput.mime_type = (file.type == undefined) ? 'undefined' : file.type;
+      MediaInfoOutput.mime_type = (file.type == undefined) ? undefined : file.type;
       // EXTRA INFO
 
     return MediaInfoOutput;
@@ -112,7 +112,7 @@ async function onChangeFile(fileinput, mediainfo) {
     for (let i = 0; i < fileinput.files.length; i++) {
       file = fileinput.files[i];
       if (file) {
-        result[i] = await get_file_info(mediainfo, file, i)
+        result[i] = await get_file_info(mediainfo, file)
         
         if (i + 1 == fileinput.files.length) {
           fileinput.style = originalStyle;
@@ -130,6 +130,7 @@ async function onChangeFile(fileinput, mediainfo) {
     fileinput.style = originalStyle;
     clearInterval(intervalId);
   }
+
  return result;
 }
 
