@@ -1,7 +1,7 @@
 /**
  *
  * @package    media-analyzer
- * @version    Release: 1.0.0
+ * @version    Release: 1.0.1
  * @license    GPL3
  * @author     Ali YILMAZ <aliyilmaz.work@gmail.com>
  * @category   Media, Javascript
@@ -88,6 +88,38 @@ function get_file_info(mediainfo, file) {
       MediaInfoOutput.mime_type = (file.type == undefined) ? undefined : file.type;
       // EXTRA INFO
 
+      // Fix for audio file mime type issue in mobile versions of browsers
+      
+      // mp3
+      if(MediaInfoOutput.mime_type == undefined || MediaInfoOutput.mime_type == ''){
+        MediaInfoOutput.mime_type = (MediaInfoOutput['media']['track'][0]['Format'] == 'MPEG Audio' && MediaInfoOutput['media']['track'][1]['Format'] == 'MPEG Audio') ? 'audio/mpeg' : undefined;
+        MediaInfoOutput.filename = file.name+'.mp3';
+      }
+      
+      // aac
+      if(MediaInfoOutput.mime_type == undefined || MediaInfoOutput.mime_type == ''){       
+        MediaInfoOutput.mime_type = (MediaInfoOutput['media']['track'][0]['Format'] == 'ADTS' && MediaInfoOutput['media']['track'][1]['Format'] == 'AAC') ? 'audio/aac' : undefined;
+        MediaInfoOutput.filename = file.name+'.aac';
+      }
+      
+      // wav
+      if(MediaInfoOutput.mime_type == undefined || MediaInfoOutput.mime_type == ''){       
+        MediaInfoOutput.mime_type = (MediaInfoOutput['media']['track'][0]['Format'] == 'Wave' && MediaInfoOutput['media']['track'][1]['Format'] == 'PCM') ? 'audio/wav' : undefined;
+        MediaInfoOutput.filename = file.name+'.wav';
+      }
+      
+      // flac
+      if(MediaInfoOutput.mime_type == undefined || MediaInfoOutput.mime_type == ''){       
+        MediaInfoOutput.mime_type = (MediaInfoOutput['media']['track'][0]['Format'] == 'FLAC' && MediaInfoOutput['media']['track'][1]['Format'] == 'FLAC') ? 'audio/flac' : undefined;
+        MediaInfoOutput.filename = file.name+'.flac';
+      }
+      
+      // m4a
+      if(MediaInfoOutput.mime_type == undefined || MediaInfoOutput.mime_type == ''){       
+        MediaInfoOutput.mime_type = (MediaInfoOutput['media']['track'][0]['Format'] == 'MPEG-4' && MediaInfoOutput['media']['track'][1]['Format'] == 'AAC') ? 'audio/x-m4a' : undefined;
+        MediaInfoOutput.filename = file.name+'.m4a';
+      }
+
     return MediaInfoOutput;
     // extra-codec
   })
@@ -96,26 +128,26 @@ function get_file_info(mediainfo, file) {
   })
 }
 
-async function onChangeFile(fileinput, mediainfo) {
+async function onChangeFile(e, mediainfo) {
   let file,
       result = [],
       numb = 4000,
-      originalStyle = fileinput.style;
+      originalStyle = e.target.style;
 
   let intervalId =  setInterval(() => {
-    fileinput.style.borderBottom = '8px solid';
-    fileinput.style.borderImage = 'linear-gradient(' + numb * 10 + 'deg, turquoise, greenyellow) 1';
+    e.target.style.borderBottom = '8px solid';
+    e.target.style.borderImage = 'linear-gradient(' + numb * 10 + 'deg, turquoise, greenyellow) 1';
     numb = numb-200;
   }, 170);
 
-  if (fileinput.files.length > 1) {
-    for (let i = 0; i < fileinput.files.length; i++) {
-      file = fileinput.files[i];
+  if (e.target.files.length > 1) {
+    for (let i = 0; i < e.target.files.length; i++) {
+      file = e.target.files[i];
       if (file) {
-        result[i] = await get_file_info(mediainfo, file)
+        result[i] = await get_file_info(mediainfo, file);
         
-        if (i + 1 == fileinput.files.length) {
-          fileinput.style = originalStyle;
+        if (i + 1 == e.target.files.length) {
+          e.target.style = originalStyle;
           clearInterval(intervalId);
           
         }
@@ -123,11 +155,11 @@ async function onChangeFile(fileinput, mediainfo) {
     }
     
   } else {
-    file = fileinput.files[0];
+    file = e.target.files[0];
     if (file) {
       result[0] = await get_file_info(mediainfo, file);
     }
-    fileinput.style = originalStyle;
+    e.target.style = originalStyle;
     clearInterval(intervalId);
   }
 
@@ -139,7 +171,7 @@ function media_analyzer(inputElement, callback) {
   let fileinput = document.querySelector(inputElement);
   MediaInfo({ format: 'JSON' }, (mediainfo) => {
     fileinput.addEventListener('change', async function(e) {
-      response = await onChangeFile(fileinput, mediainfo);
+      response = await onChangeFile(e, mediainfo);
       if (callback) callback(e, response);
     });
   });
