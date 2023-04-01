@@ -1,0 +1,27 @@
+html, body{
+    margin:0;
+    padding:0;
+  }
+  body * {
+    box-sizing: border-box;
+  }
+  #wrapper {
+    padding: 8px;
+  }
+  #fileinput, #fileinput1, #fileinput2 {
+    padding-bottom: 8px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  textarea#output{
+    width: 100%;
+    height: 300px;
+    margin-top: 10px;
+  }
+  
+  img, audio, video{
+    float: left;
+    max-width: 24%;
+    /* max-height: 300px; */
+    margin:4px;
+  }
